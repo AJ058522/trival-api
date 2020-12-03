@@ -62,7 +62,7 @@ class SearchRepository implements SearchRepositoryInterface
     {
 
         $response = Http::get('http://www.crcind.com/csp/samples/SOAP.Demo.cls?soap_method=GetByName&name=' . $term);
-        $xml = $this->removeNamespaceFromXML($response->body());
+        $xml = removeNamespaceFromXML($response->body());
         $xml = simplexml_load_string($xml);
         $elementos = $xml->xpath('SOAP-ENV:Body');
         $data = $elementos[0]->GetByNameResponse->GetByNameResult->diffgram->ListByName;
@@ -75,19 +75,4 @@ class SearchRepository implements SearchRepositoryInterface
         return $transformedData;
     }
 
-    function removeNamespaceFromXML($xml)
-    {
-        $toRemove = ['diffgr', 'diffgram'];
-        $nameSpaceDefRegEx = '(\S+)=["\']?((?:.(?!["\']?\s+(?:\S+)=|[>"\']))+.)["\']?';
-
-        foreach ($toRemove as $remove) {
-            $xml = str_replace('<' . $remove . ':', '<', $xml);
-            $xml = str_replace('</' . $remove . ':', '</', $xml);
-            $xml = str_replace($remove . ':commentText', 'commentText', $xml);
-            $pattern = "/xmlns:{$remove}{$nameSpaceDefRegEx}/";
-            $xml = preg_replace($pattern, '', $xml, 1);
-        }
-
-        return $xml;
-    }
 }
